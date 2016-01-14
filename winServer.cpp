@@ -10,6 +10,8 @@ int main()
 	Config* config = new Config(TEXT("\\server.ini"));
 	
 	Server* server = new Server(config);
+
+
 	getchar();
 	getchar();
     return 0;

@@ -1,4 +1,5 @@
 #pragma once
+#define BUFFER_SIZE 400
 class Config
 {
 public:
@@ -9,5 +10,7 @@ public:
 	void setPort(int port);
 
 private:
-	int port = 80;
+	int Port = 80;
+	TCHAR ServerRoot[BUFFER_SIZE];
+	TCHAR DocumentRoot[BUFFER_SIZE];
 };

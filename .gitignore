@@ -2,4 +2,5 @@
 /Release
 /ipch
 /.vs
+/x64
 *.sdf

@@ -2,6 +2,8 @@
 #include "ServerConfig.h"
 #include "ResHeader.h"
 
+#pragma comment(lib,"ws2_32.lib")
+
 #define OP_READ   1
 #define OP_WRITE  2
 #define OP_ACCEPT 3
@@ -11,7 +13,7 @@ typedef struct
 {
 	OVERLAPPED overlapped;
 	WSABUF databuff;
-	char buffer[DataBuffSize];
+	TCHAR buffer[DataBuffSize];
 	DWORD length;
 	int operationType;
 }PER_IO_OPERATEION_DATA, *LPPER_IO_OPERATION_DATA, *LPPER_IO_DATA, PER_IO_DATA;
@@ -26,6 +28,7 @@ typedef struct
 	SOCKET socket;
 	SOCKADDR_STORAGE ClientAddr;
 	SYSTEMTIME lastRecv;
+	SYSTEMTIME lastSend;
 }PER_HANDLE_DATA, *LPPER_HANDLE_DATA;
 typedef struct ThreadPars {
 	int count;

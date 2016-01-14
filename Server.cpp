@@ -1,51 +1,6 @@
 ﻿#include "stdafx.h"
 #include "Server.h"
-/*
-unsigned int __stdcall ClientHandlerThreadFun(PVOID pM)
-{
-	int ret;
-	int Index;
-	ThreadPars* threadPars = (ThreadPars*)pM;
-	while (1)
-	{
-		if (threadPars->count > 0)
-		{
-			ret = WSAWaitForMultipleEvents(threadPars->count, threadPars->events, FALSE, 100, FALSE);
-			if (ret == WSA_WAIT_FAILED || ret == WSA_WAIT_TIMEOUT)
-			{
-				
-			}
-			else
-			{
-				Index = ret - WSA_WAIT_EVENT_0;
-				for (int i = Index; i <= threadPars->count; i++)
-				{
-					WSAResetEvent(threadPars->events[i]);
-					WSANETWORKEVENTS netEvent;
-					WSAEnumNetworkEvents(threadPars->sockets[i], threadPars->events[i], &netEvent);
-					if (netEvent.lNetworkEvents & FD_READ)                // 处理FD_READ通知消息  
-					{
-						cout << "new request" << endl;
-						char recvBuf[500];
-						recv(threadPars->sockets[i], recvBuf, 500, 0);
-						cout << recvBuf << endl;
-						char sendBuf[5000];
-						char content[1000] = "这是内容";
-						char header[500] = "HTTP/1.1 200 OK\r\nDate: Thu, 24 Dec 2015 13:36:34 GMT\r\nServer: winServer by dyw\r\nConnection: Keep-Alive\r\nContent-Length: 8\r\nContent-Type: text/html;charset=UTF-8\r\n\r\n";
-						sprintf_s(sendBuf, "%s%s", header, content);
-						send(threadPars->sockets[i], sendBuf, strlen(sendBuf) + 1, 0);
-					}
-					else if (netEvent.lNetworkEvents & FD_CLOSE)
-					{
-						cout << "client close" << endl;
-					}
-				}
-			}
-		}
-	}
-	return 0;
-}
-*/
+
 // 开始服务工作线程函数  
 unsigned int __stdcall ServerWorkThread(LPVOID IpParam)
 {
@@ -76,14 +31,14 @@ unsigned int __stdcall ServerWorkThread(LPVOID IpParam)
 			PerIoData = NULL;
 			continue;
 		}
-		char content[1000] = "这是内容\r\n";
+		//TCHAR content[1000] = TEXT("这是内容\r\n");
 		//cout << strlen(content) << endl;
-		char time[100];
-		ResHeader* resheader = new ResHeader("ffe");
-		resheader->getUTCstr(time);
-		char header[500];
-		sprintf_s(header, 500, "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nDate: %s\r\nServer: winServer by dyw\r\nContent-Length: 10\r\nContent-Type: text/plain\r\n\r\n", time);
-		delete resheader;
+		//char time[100];
+		//ResHeader* resheader = new ResHeader("ffe");
+		//resheader->getUTCstr(time);
+		//char header[500];
+		//sprintf_s(header, 500, "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nDate: %s\r\nServer: winServer by dyw\r\nContent-Length: 10\r\nContent-Type: text/plain\r\n\r\n", time);
+		//delete resheader;
 		switch (PerIoData->operationType)
 		{
 			case OP_READ:       // 完成一个接收请求
@@ -93,18 +48,21 @@ unsigned int __stdcall ServerWorkThread(LPVOID IpParam)
 				GetSystemTime(&(PerHandleData->lastRecv));
 				ZeroMemory(PerIoData, sizeof(PER_IO_DATA)); // 清空内存 
 
-				sprintf_s(PerIoData->buffer, "%s%s", header, content);
-				PerIoData->databuff.len = strlen(PerIoData->buffer);
-				PerIoData->databuff.buf = PerIoData->buffer;
-				PerIoData->operationType = OP_WRITE;    // read
-				WSASend(PerHandleData->socket, &(PerIoData->databuff), 1, &(PerIoData->length), Flags, &(PerIoData->overlapped), NULL);
+
+				//wsprintf(PerIoData->buffer, TEXT("%s%s"), header, content);
+				//PerIoData->databuff.len = _tcslen(PerIoData->buffer);
+				//PerIoData->databuff.buf = PerIoData->buffer;
+				//PerIoData->operationType = OP_WRITE;    // read
+				//WSASend(PerHandleData->socket, &(PerIoData->databuff), 1, &(PerIoData->length), Flags, &(PerIoData->overlapped), NULL);
 				//ReleaseMutex(hMutex);
 				break;
 			case OP_WRITE:
 				// 为下一个重叠调用建立单I/O操作数据  
 				//cout << "write success" << endl;
 				//cout << BytesTransferred << PerIoData->length << endl;
-				ZeroMemory(PerIoData, sizeof(PER_IO_DATA)); // 清空内存  
+				GetSystemTime(&(PerHandleData->lastSend));
+				ZeroMemory(PerIoData, sizeof(PER_IO_DATA)); // 清空内存 
+
 				PerIoData->databuff.len = DataBuffSize;
 				PerIoData->databuff.buf = PerIoData->buffer;
 				PerIoData->operationType = OP_READ;    // read  
