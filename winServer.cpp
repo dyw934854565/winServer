@@ -3,15 +3,13 @@
 
 #include "stdafx.h"
 #include "ServerConfig.h"
-#include "Server.h"
+#include "Http.h"
 
 int main()
 {
-	Config* config = new Config(TEXT("\\server.ini"));
+	Http* http = new Http();
+
 	
-	Server* server = new Server(config);
-
-
 	getchar();
 	getchar();
     return 0;

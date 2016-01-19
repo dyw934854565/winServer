@@ -7,10 +7,11 @@ public:
 	Config();
 	~Config();
 	int getPort();
-	void setPort(int port);
 
 private:
+
 	int Port = 80;
+
 	TCHAR ServerRoot[BUFFER_SIZE];
 	TCHAR DocumentRoot[BUFFER_SIZE];
 };

@@ -146,6 +146,8 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="http.h" />
+    <ClInclude Include="iocpData.h" />
     <ClInclude Include="ReqHeader.h" />
     <ClInclude Include="ResHeader.h" />
     <ClInclude Include="ServerConfig.h" />
@@ -154,6 +156,7 @@
     <ClInclude Include="Server.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="http.cpp" />
     <ClCompile Include="ReqHeader.cpp" />
     <ClCompile Include="ResHeader.cpp" />
     <ClCompile Include="Server.cpp" />

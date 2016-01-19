@@ -13,6 +13,7 @@
 #include <Windows.h>
 #include <tchar.h>
 #include <vector>
+#include <string>
 using namespace std;
 
 

@@ -36,7 +36,3 @@ int Config::getPort()
 {
 	return this->Port;
 }
-void Config::setPort(int port)
-{
-	this->Port = port;
-}
