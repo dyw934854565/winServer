@@ -1,13 +1,13 @@
 ﻿#include "stdafx.h"
-#include "Server.h"
-Server::Server()
+#include "TcpServer.h"
+TcpServer::TcpServer()
 {
 	//this->CreatServer();
 }
 // 开始服务工作线程函数
 unsigned int __stdcall ServerWorkThread(LPVOID IpParam)
 {
-	Server* server = (Server*)IpParam;
+	TcpServer* server = (TcpServer*)IpParam;
 	HANDLE CompletionPort = server->getCompletionPort();
 	DWORD BytesTransferred;
 	LPOVERLAPPED IpOverlapped;
@@ -94,34 +94,34 @@ unsigned int __stdcall ServerWorkThread(LPVOID IpParam)
 	}
 	return 0;
 }
-BOOL Server::OnAccept(SOCKET clientSock, LPPER_IO_DATA PerIoData)
+BOOL TcpServer::OnAccept(SOCKET clientSock, LPPER_IO_DATA PerIoData)
 {
 	cout << "on accept" << endl;
 	return true;
 }
-BOOL Server::OnRecv(SOCKET clientSock, LPPER_IO_DATA PerIoData)
+BOOL TcpServer::OnRecv(SOCKET clientSock, LPPER_IO_DATA PerIoData)
 {
 	cout << PerIoData->databuff.buf << endl;
 	cout << "on recv" << endl;
 	return true;
 }
-BOOL Server::OnSend(SOCKET clientSock, LPPER_IO_DATA PerIoData)
+BOOL TcpServer::OnSend(SOCKET clientSock, LPPER_IO_DATA PerIoData)
 {
 	cout << "on send" << endl;
 	return true;
 }
-BOOL Server::OnClose(LPPER_HANDLE_DATA PerHandleData)
+BOOL TcpServer::OnClose(LPPER_HANDLE_DATA PerHandleData)
 {
 	cout << "on close" << endl;
 	return true;
 }
-void Server::accept()
+void TcpServer::accept()
 {
 	LPPER_IO_DATA PerIoData = new PER_IO_DATA();
 
 	this->accept(PerIoData);
 }
-void Server::accept(LPPER_IO_DATA PerIoData)
+void TcpServer::accept(LPPER_IO_DATA PerIoData)
 {
 	ZeroMemory(PerIoData, sizeof(PER_IO_DATA)); // 清空内存
 	PerIoData->ClientSocket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
@@ -129,13 +129,13 @@ void Server::accept(LPPER_IO_DATA PerIoData)
 	//将接收缓冲置为0,令AcceptEx直接返回,防止拒绝服务攻击 
 	AcceptEx(this->sockSrv, PerIoData->ClientSocket, PerIoData->buffer, 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &(PerIoData->length), &(PerIoData->overlapped));
 }
-void Server::recv(SOCKET clientSock)
+void TcpServer::recv(SOCKET clientSock)
 {
 	//接收消息
 	LPPER_IO_DATA newPerIoData = new PER_IO_DATA();
 	this->recv(clientSock, newPerIoData);
 }
-void Server::recv(SOCKET clientSock, LPPER_IO_DATA PerIoData)
+void TcpServer::recv(SOCKET clientSock, LPPER_IO_DATA PerIoData)
 {
 	ZeroMemory(PerIoData, sizeof(PER_IO_DATA)); // 清空内存 
 
@@ -145,20 +145,23 @@ void Server::recv(SOCKET clientSock, LPPER_IO_DATA PerIoData)
 	DWORD flags = 0;
 	WSARecv(clientSock, &(PerIoData->databuff), 1, &PerIoData->length, &flags, &(PerIoData->overlapped), NULL);
 }
-void Server::send(SOCKET clientSock, LPPER_IO_DATA PerIoData)
+void TcpServer::send(SOCKET clientSock, LPPER_IO_DATA PerIoData)
 {
 	PerIoData->operationType = OP_WRITE;
+	PerIoData->databuff.len = strlen(PerIoData->buffer);
+	cout << PerIoData->databuff.buf << endl;
+	cout << PerIoData->databuff.len << endl;
 	WSASend(clientSock, &(PerIoData->databuff), 1, &(PerIoData->length), NULL, &(PerIoData->overlapped), NULL);
 }
-HANDLE Server::getCompletionPort()
+HANDLE TcpServer::getCompletionPort()
 {
 	return this->completionPort;
 }
-void Server::OnComplite(int type)
+void TcpServer::OnComplite(int type)
 {
 	cout << type << endl;
 }
-void Server::CreatServer()
+void TcpServer::CreatServer()
 {
 	WORD wVersionRequested;
 	WSADATA wsaData;
@@ -242,7 +245,7 @@ void Server::CreatServer()
 		this->accept();
 	}
 }
-Server::~Server()
+TcpServer::~TcpServer()
 {
 	//todo 释放客户端vector
 	closesocket(this->sockSrv);

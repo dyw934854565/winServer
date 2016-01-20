@@ -6,6 +6,11 @@ public:
 	ReqHeader(char* reqstr);
 	~ReqHeader();
 	string getResult();
+	string getUrl();
+	string getHttpVersion();
+	string getMethod();
+	string getHeader(string name);
+	BOOL parseHeader(string str);
 private:
 	string header;
 	string body;

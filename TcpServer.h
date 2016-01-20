@@ -1,15 +1,14 @@
 #pragma once
-#include "ServerConfig.h"
 #include "iocpData.h"
 #include "mswsock.h"
 
 #pragma comment(lib,"ws2_32.lib")
 #pragma comment(lib,"Mswsock.lib")
 
-class Server
+class TcpServer
 {
 public:
-	Server();
+	TcpServer();
 	virtual BOOL OnAccept(SOCKET clientSock, LPPER_IO_DATA PerIoData);
 	virtual BOOL OnRecv(SOCKET clientSock, LPPER_IO_DATA PerIoData);
 	virtual BOOL OnSend(SOCKET clientSock, LPPER_IO_DATA PerIoData);
@@ -27,7 +26,7 @@ public:
 	//获取完成端口
 	HANDLE getCompletionPort();
 	void OnComplite(int type);
-	~Server();
+	~TcpServer();
 private:
 	void recv(SOCKET clientSock);
 	void accept(LPPER_IO_DATA PerIoData);

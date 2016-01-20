@@ -7,7 +7,7 @@
 #define FILE_READ  4
 #define FILE_WRITE 5
 
-#define DataBuffSize 1024
+#define DataBuffSize 1024*1024
 
 typedef struct
 {
@@ -17,6 +17,7 @@ typedef struct
 	char buffer[DataBuffSize];
 	DWORD length;
 	int operationType;
+	BOOL NeedRecv;
 }PER_IO_OPERATEION_DATA, *LPPER_IO_OPERATION_DATA, *LPPER_IO_DATA, PER_IO_DATA;
 
 /**

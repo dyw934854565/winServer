@@ -1,5 +1,5 @@
-#pragma once
-#define BUFFER_SIZE 400
+﻿#pragma once
+#define PATH_SIZE 400
 class Config
 {
 public:
@@ -7,11 +7,15 @@ public:
 	Config();
 	~Config();
 	int getPort();
+	TCHAR* getDocumentRoot();
+	TCHAR* getServerRoot();
+	TCHAR* getDefaultPage();
 
 private:
 
 	int Port = 80;
 
-	TCHAR ServerRoot[BUFFER_SIZE];
-	TCHAR DocumentRoot[BUFFER_SIZE];
+	TCHAR ServerRoot[PATH_SIZE];
+	TCHAR DocumentRoot[PATH_SIZE];
+	TCHAR DefaultPage[PATH_SIZE] = TEXT("index.html");
 };

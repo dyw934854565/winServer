@@ -1,17 +1,19 @@
 #pragma once
 #include "stdafx.h"
+#include <map>
 class ResHeader
 {
 public:
-	ResHeader(string header);
+	ResHeader();
 	~ResHeader();
 
-	int getUTCstr(char* date);
-
+	string getUTCstr();
+	void setStatusCode(string str);
+	void setHttpVersion(string str);
+	void setHeader(string name, string value);
+	string getHeaderStr(string serverStr, int length = 0);
 private:
-	char statusCode[4] = "200";
-	char httpVersion[10] = "HTTP/1.1";
-	char statusTip[10] = "OK";
-	char Date[100];
-	
+	string statusCode = "200 OK";
+	string httpVersion = "HTTP/1.1";
+	map<string, string> resHeaders;
 };
