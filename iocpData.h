@@ -11,7 +11,7 @@
 
 typedef struct
 {
-	SOCKET ClientSocket;
+	HANDLE ClientHandle;
 	OVERLAPPED overlapped;
 	WSABUF databuff;
 	char buffer[DataBuffSize];
@@ -27,7 +27,7 @@ typedef struct
 **/
 typedef struct
 {
-	SOCKET socket;
+	HANDLE handle;
 	SOCKADDR_STORAGE addr;
 	SYSTEMTIME lastRecv;
 	SYSTEMTIME lastSend;

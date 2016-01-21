@@ -29,10 +29,12 @@ string ResHeader::getUTCstr()
 	sprintf_s(date,100, "%s, %02d %s %d %02d:%02d:%02d GMT", weeks[now.wDayOfWeek], now.wDay, months[now.wMonth], now.wYear, now.wHour, now.wMinute, now.wSecond);
 	return string(date);
 }
-string ResHeader::getHeaderStr(string serverStr, int length)
+string ResHeader::getHeaderStr(string serverStr, DWORD length)
 {
 	string res(this->httpVersion + ' ' + this->statusCode + "\r\n");
 	res += ("Server: " + serverStr + "\r\n");
+	res += "Connection: Keep-Alive\r\n";
+	res += "Keep-Alive: timeout=5, max=100\r\n";
 	if (length)
 	{
 		char temp[30];

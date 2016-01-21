@@ -29,11 +29,11 @@ Config::Config(TCHAR* path)
 			GetPrivateProfileString(TEXT("server"), TEXT("DocumentRoot"), this->DocumentRoot, this->DocumentRoot, PATH_SIZE, bufferpath);
 
 			//get default page
-			GetPrivateProfileString(TEXT("server"), TEXT("DocumentRoot"), TEXT("index.html"), this->DefaultPage, PATH_SIZE, bufferpath);
+			GetPrivateProfileString(TEXT("server"), TEXT("DefaultPage"), TEXT("index.html"), this->DefaultPage, PATH_SIZE, bufferpath);
 		}
 		else
 		{
-			cout << "can'not find server.ini, server is created with default setting" << endl;
+			cout << "can'not find the server.ini config file, server is created with default setting" << endl;
 		}
 	}
 }

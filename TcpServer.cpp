@@ -26,7 +26,7 @@ unsigned int __stdcall ServerWorkThread(LPVOID IpParam)
 		// 检查在套接字上是否有错误发生
 		if (0 == BytesTransferred && (PerIoData->operationType == OP_READ || PerIoData->operationType == OP_WRITE)) {
 			server->OnClose(PerHandleData);
-			closesocket(PerIoData->ClientSocket);
+			closesocket((SOCKET)PerIoData->ClientHandle);
 
 			delete PerIoData;
 			PerIoData = NULL;
@@ -35,35 +35,26 @@ unsigned int __stdcall ServerWorkThread(LPVOID IpParam)
 			PerHandleData = NULL;
 			continue;
 		}
-		/*
-		char content[1000] = "这是内容\r\n";
-		char time[100];
-		ResHeader* resheader = new ResHeader("ffe");
-		resheader->getUTCstr(time);
-		char header[500];
-		sprintf_s(header, 500, "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nDate: %s\r\nServer: winServer by dyw\r\nContent-Length: 10\r\nContent-Type: text/plain\r\n\r\n", time);
-		delete resheader;
-		*/
 
 		switch (PerIoData->operationType)
 		{
 		case OP_ACCEPT:    // 完成一个连接请求
 			newHandleData = new PER_HANDLE_DATA();
-			newHandleData->socket = PerIoData->ClientSocket;
-			CreateIoCompletionPort((HANDLE)(newHandleData->socket), CompletionPort, (DWORD)newHandleData, 0);
-			if (server->OnAccept(newHandleData->socket, PerIoData)) {
+			newHandleData->handle = PerIoData->ClientHandle;
+			CreateIoCompletionPort(newHandleData->handle, CompletionPort, (DWORD)newHandleData, 0);
+			if (server->OnAccept((SOCKET)newHandleData->handle, PerIoData)) {
 				//投递接收请求
-				server->recv(newHandleData->socket, PerIoData);
+				server->recv((SOCKET)newHandleData->handle, PerIoData);
 			}
 			//投递连接
 			server->accept();
 			break;
 		case OP_READ:    // 完成一个接收请求
 			GetSystemTime(&(PerHandleData->lastRecv));
-			if (server->OnRecv(PerHandleData->socket, PerIoData))
+			if (server->OnRecv((SOCKET)PerHandleData->handle, PerIoData))
 			{
 				//投递接收请求
-				server->recv(PerHandleData->socket, PerIoData);
+				server->recv((SOCKET)PerHandleData->handle, PerIoData);
 			}
 
 			//cout << "A Client says: " << PerIoData->databuff.buf << endl;
@@ -81,14 +72,14 @@ unsigned int __stdcall ServerWorkThread(LPVOID IpParam)
 		case OP_WRITE:   // 完成一个发送请求
 			GetSystemTime(&(PerHandleData->lastSend));
 
-			if (server->OnSend(PerHandleData->socket, PerIoData))
+			if (server->OnSend((SOCKET)PerHandleData->handle, PerIoData))
 			{
 				//投递接收请求
-				server->recv(PerHandleData->socket, PerIoData);
+				server->recv((SOCKET)PerHandleData->handle, PerIoData);
 			}
 			break;
 		default:
-			server->OnComplite(PerIoData->operationType);
+			server->OnComplite(PerIoData->operationType, PerHandleData, PerIoData);
 			break;
 		}
 	}
@@ -124,10 +115,10 @@ void TcpServer::accept()
 void TcpServer::accept(LPPER_IO_DATA PerIoData)
 {
 	ZeroMemory(PerIoData, sizeof(PER_IO_DATA)); // 清空内存
-	PerIoData->ClientSocket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
+	PerIoData->ClientHandle = (HANDLE)WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
 	PerIoData->operationType = OP_ACCEPT;
 	//将接收缓冲置为0,令AcceptEx直接返回,防止拒绝服务攻击 
-	AcceptEx(this->sockSrv, PerIoData->ClientSocket, PerIoData->buffer, 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &(PerIoData->length), &(PerIoData->overlapped));
+	AcceptEx(this->sockSrv, (SOCKET)PerIoData->ClientHandle, PerIoData->buffer, 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &(PerIoData->length), &(PerIoData->overlapped));
 }
 void TcpServer::recv(SOCKET clientSock)
 {
@@ -148,16 +139,15 @@ void TcpServer::recv(SOCKET clientSock, LPPER_IO_DATA PerIoData)
 void TcpServer::send(SOCKET clientSock, LPPER_IO_DATA PerIoData)
 {
 	PerIoData->operationType = OP_WRITE;
+	PerIoData->databuff.buf = PerIoData->buffer;
 	PerIoData->databuff.len = strlen(PerIoData->buffer);
-	cout << PerIoData->databuff.buf << endl;
-	cout << PerIoData->databuff.len << endl;
 	WSASend(clientSock, &(PerIoData->databuff), 1, &(PerIoData->length), NULL, &(PerIoData->overlapped), NULL);
 }
 HANDLE TcpServer::getCompletionPort()
 {
 	return this->completionPort;
 }
-void TcpServer::OnComplite(int type)
+void TcpServer::OnComplite(int type, LPPER_HANDLE_DATA PerHandleData, LPPER_IO_DATA PerIoData)
 {
 	cout << type << endl;
 }
@@ -237,10 +227,10 @@ void TcpServer::CreatServer()
 	cout << "sever listen on port:" << this->port << endl;
 
 	LPPER_HANDLE_DATA handleData = new PER_HANDLE_DATA();
-	handleData->socket = this->sockSrv;
+	handleData->handle = (HANDLE)this->sockSrv;
 	CreateIoCompletionPort((HANDLE)(this->sockSrv), this->completionPort, (DWORD)handleData, 0);
 
-	for (int i = 0; i < 1; i++)
+	for (int i = 0; i < 100; i++)
 	{
 		this->accept();
 	}

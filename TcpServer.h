@@ -14,6 +14,8 @@ public:
 	virtual BOOL OnSend(SOCKET clientSock, LPPER_IO_DATA PerIoData);
 	virtual BOOL OnClose(LPPER_HANDLE_DATA PerHandleData);
 
+	virtual void OnComplite(int type, LPPER_HANDLE_DATA PerHandleData, LPPER_IO_DATA PerIoData);
+
 	//投递iocp接收
 	void recv(SOCKET clientSock, LPPER_IO_DATA PerIoData);
 
@@ -25,7 +27,6 @@ public:
 
 	//获取完成端口
 	HANDLE getCompletionPort();
-	void OnComplite(int type);
 	~TcpServer();
 private:
 	void recv(SOCKET clientSock);
@@ -33,7 +34,7 @@ private:
 	vector < PER_HANDLE_DATA* > clientGroup;
 protected:
 	void CreatServer();
-	HANDLE completionPort;
 	SOCKET sockSrv;
+	HANDLE completionPort;
 	int port = 80;
 };
