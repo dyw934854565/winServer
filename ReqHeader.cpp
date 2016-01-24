@@ -5,8 +5,18 @@ ReqHeader::ReqHeader(char* reqstr)
 {
 	string str(reqstr);
 	size_t headerSize = str.find("\r\n\r\n");
+	if (headerSize == string::npos)
+	{
+		cout << str << endl;
+		cout << "bad request" << endl;
+		this->result = "404";
+		return;
+	}
 	this->header = str.substr(0, headerSize);
-	this->body = str.substr(headerSize+4);
+	if (str.length() - this->header.length() > 4)
+	{
+		this->body = str.substr(headerSize + 4);
+	}
 
 	size_t index = 0;
 	while (true)
@@ -14,14 +24,14 @@ ReqHeader::ReqHeader(char* reqstr)
 		size_t tempIndex = index;
 		string header;
 		index = this->header.find("\r\n", index);
-		if (index > 0)
+		if (index < string::npos)
 		{
 			header = this->header.substr(tempIndex, index - tempIndex);
 			if (tempIndex == 0)
 			{
 				size_t one = 0,tempone=0;
 				one = header.find(' ', 0);
-				if (one < 0)
+				if (one == string::npos)
 				{
 					cout << "method err" << endl;
 					this->result = "400";
@@ -34,7 +44,7 @@ ReqHeader::ReqHeader(char* reqstr)
 				}
 				tempone = one;
 				one = header.find(' ', tempone);
-				if (one < 0)
+				if (one == string::npos)
 				{
 					this->result = "400";
 					return;
@@ -54,7 +64,7 @@ ReqHeader::ReqHeader(char* reqstr)
 		}
 		else
 		{
-			header = this->header.substr(index);
+			header = this->header.substr(tempIndex);
 			if (this->parseHeader(header)) return;
 			break;
 		}
@@ -80,7 +90,7 @@ string ReqHeader::getMethod()
 BOOL ReqHeader::parseHeader(string str)
 {
 	size_t pos = str.find(": ");
-	if (pos > 0)
+	if (pos < string::npos)
 	{
 		this->headers[str.substr(0, pos)] = str.substr(pos + 2);
 	}
@@ -88,8 +98,9 @@ BOOL ReqHeader::parseHeader(string str)
 	{
 		cout << "header err" << endl;
 		this->result = "400";
+		return true;
 	}
-	return true;
+	return false;
 }
 string ReqHeader::getHeader(string name)
 {

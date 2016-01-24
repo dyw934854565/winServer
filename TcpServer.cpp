@@ -56,18 +56,6 @@ unsigned int __stdcall ServerWorkThread(LPVOID IpParam)
 				//投递接收请求
 				server->recv((SOCKET)PerHandleData->handle, PerIoData);
 			}
-
-			//cout << "A Client says: " << PerIoData->databuff.buf << endl;
-
-			//http->handle(PerIoData, PerHandleData->socket, CompletionPort);
-
-			/*
-			sprintf_s(PerIoData->buffer, DataBuffSize, "%s%s", header, content);
-			PerIoData->databuff.len = strlen(PerIoData->buffer);
-			PerIoData->databuff.buf = PerIoData->buffer;
-			PerIoData->operationType = OP_WRITE;    // read
-			WSASend(PerHandleData->socket, &(PerIoData->databuff), 1, &(PerIoData->length), Flags, &(PerIoData->overlapped), NULL);
-			*/
 			break;
 		case OP_WRITE:   // 完成一个发送请求
 			GetSystemTime(&(PerHandleData->lastSend));
@@ -79,7 +67,7 @@ unsigned int __stdcall ServerWorkThread(LPVOID IpParam)
 			}
 			break;
 		default:
-			server->OnComplite(PerIoData->operationType, PerHandleData, PerIoData);
+			server->OnComplite(PerIoData->operationType, PerHandleData, PerIoData, BytesTransferred);
 			break;
 		}
 	}
@@ -136,18 +124,30 @@ void TcpServer::recv(SOCKET clientSock, LPPER_IO_DATA PerIoData)
 	DWORD flags = 0;
 	WSARecv(clientSock, &(PerIoData->databuff), 1, &PerIoData->length, &flags, &(PerIoData->overlapped), NULL);
 }
-void TcpServer::send(SOCKET clientSock, LPPER_IO_DATA PerIoData)
+void TcpServer::send(SOCKET clientSock, LPPER_IO_DATA PerIoData, int length)
 {
 	PerIoData->operationType = OP_WRITE;
 	PerIoData->databuff.buf = PerIoData->buffer;
-	PerIoData->databuff.len = strlen(PerIoData->buffer);
-	WSASend(clientSock, &(PerIoData->databuff), 1, &(PerIoData->length), NULL, &(PerIoData->overlapped), NULL);
+	if (length > 0)
+	{
+		PerIoData->databuff.len = length;
+	}
+	else
+	{
+		PerIoData->databuff.len = strlen(PerIoData->buffer);
+		if (PerIoData->databuff.len == 0)
+		{
+			return;
+		}
+	}
+	cout << "send:" << PerIoData->databuff.len << endl;
+	WSASend(clientSock, &(PerIoData->databuff), 1, NULL, NULL, &(PerIoData->overlapped), NULL);
 }
 HANDLE TcpServer::getCompletionPort()
 {
 	return this->completionPort;
 }
-void TcpServer::OnComplite(int type, LPPER_HANDLE_DATA PerHandleData, LPPER_IO_DATA PerIoData)
+void TcpServer::OnComplite(int type, LPPER_HANDLE_DATA PerHandleData, LPPER_IO_DATA PerIoData, DWORD BytesTransferred)
 {
 	cout << type << endl;
 }
@@ -194,7 +194,7 @@ void TcpServer::CreatServer()
 
 	// 创建IOCP线程--线程里面创建线程池  
 
-	// 基于处理器的核心数量创建线程  
+	// 基于处理器的核心数量创建线程
 	for (DWORD i = 0; i < (mySysInfo.dwNumberOfProcessors * 2); ++i) {
 		// 创建服务器工作器线程，并将完成端口传递到该线程  
 		HANDLE ThreadHandle = (HANDLE)_beginthreadex(NULL, 0, ServerWorkThread, (PVOID)this, 0, NULL);
@@ -234,6 +234,11 @@ void TcpServer::CreatServer()
 	{
 		this->accept();
 	}
+	//todo   每隔1s去调用clientHandler，管理连接中的客户端
+}
+void TcpServer::clientHandler()
+{
+
 }
 TcpServer::~TcpServer()
 {

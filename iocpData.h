@@ -7,17 +7,20 @@
 #define FILE_READ  4
 #define FILE_WRITE 5
 
-#define DataBuffSize 1024*1024
+const DWORD DataBuffSize = 1024 * 4;
 
 typedef struct
 {
 	HANDLE ClientHandle;
 	OVERLAPPED overlapped;
 	WSABUF databuff;
-	char buffer[DataBuffSize];
+	char buffer[DataBuffSize + 1];  //+1保证读文件字符串有正常的结尾 '\0'
 	DWORD length;
 	int operationType;
 	BOOL NeedRecv;
+	//DWORD Offset;
+	//DWORD OffsetHigh;
+	//HANDLE hEvent;
 }PER_IO_OPERATEION_DATA, *LPPER_IO_OPERATION_DATA, *LPPER_IO_DATA, PER_IO_DATA;
 
 /**
@@ -31,4 +34,6 @@ typedef struct
 	SOCKADDR_STORAGE addr;
 	SYSTEMTIME lastRecv;
 	SYSTEMTIME lastSend;
+	DWORD fileLength;
+	DWORD fileReaded;
 }PER_HANDLE_DATA, *LPPER_HANDLE_DATA;

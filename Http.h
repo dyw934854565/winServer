@@ -11,8 +11,9 @@ public:
 	BOOL OnSend(SOCKET clientSock, LPPER_IO_DATA PerIoData);
 	BOOL OnAccept(SOCKET clientSock, LPPER_IO_DATA PerIoData);
 	BOOL OnClose(LPPER_HANDLE_DATA PerHandleData);
-	void Http::OnComplite(int type, LPPER_HANDLE_DATA PerHandleData, LPPER_IO_DATA PerIoData);
+	void Http::OnComplite(int type, LPPER_HANDLE_DATA PerHandleData, LPPER_IO_DATA PerIoData, DWORD BytesTransferred);
 
+	void clientHandler();
 	string encodeURI(string str);
 	string decodeURI(string str);
 	~Http();
@@ -20,5 +21,6 @@ private:
 	Config* config;
 	string serverStr = "winServer by dyw";
 	map <string, string> statucodes;
+	map <string, string> fileExt;  //ÎÄ¼þºó×º
 };
 

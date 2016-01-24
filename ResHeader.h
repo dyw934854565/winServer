@@ -11,7 +11,7 @@ public:
 	void setStatusCode(string str);
 	void setHttpVersion(string str);
 	void setHeader(string name, string value);
-	string getHeaderStr(string serverStr, DWORD length = 0);
+	string getHeaderStr(string serverStr, int length = 0);
 private:
 	string statusCode = "200 OK";
 	string httpVersion = "HTTP/1.1";
